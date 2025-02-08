@@ -63,6 +63,7 @@ dependencies:
   url_launcher: ^6.1.7
   encrypt: ^5.0.3
   get_it: ^8.0.3
+  shared_preferences:
 
 
 dev_dependencies:

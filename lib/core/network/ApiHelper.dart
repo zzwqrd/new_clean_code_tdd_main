@@ -5,6 +5,7 @@ import 'package:clean_code_tdd_main/features/feature_name/presentation/bloc/bloc
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiHelper {
   late Dio _dio;
@@ -46,35 +47,40 @@ class ApiHelper {
 
   // ✅ استرجاع التوكن من التخزين
   Future<String?> _getAuthToken() async {
-    // try {
-    //   final prefs = await SharedPreferences.getInstance();
-    //   return prefs.getString('auth_token'); // استرجاع التوكن المخزن
-    // } catch (e) {
-    //   _logger.red('Failed to get auth token: $e');
-    //   return null;
-    // }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token'); // استرجاع التوكن المخزن
+    } catch (e) {
+      _logger.red('Failed to get auth token: $e');
+      return null;
+    }
   }
 
   // ✅ حفظ التوكن عند تسجيل الدخول (يتم استدعاؤها بعد نجاح تسجيل الدخول)
-  Future<void> saveAuthToken(String token) async {
-    // try {
-    //   final prefs = await SharedPreferences.getInstance();
-    //   await prefs.setString('auth_token', token);
-    //   _logger.green('Auth token saved successfully');
-    // } catch (e) {
-    //   _logger.red('Failed to save auth token: $e');
-    // }
+  // Future<void> saveAuthToken(String token) async {
+  //   // try {
+  //   //   final prefs = await SharedPreferences.getInstance();
+  //   //   await prefs.setString('auth_token', token);
+  //   //   _logger.green('Auth token saved successfully');
+  //   // } catch (e) {
+  //   //   _logger.red('Failed to save auth token: $e');
+  //   // }
+  // }
+  Future<void> saveAuthToken(String token, int expiry) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('auth_token', token);
+    await prefs.setInt('token_expiry', expiry);
   }
 
   // ✅ حذف التوكن عند تسجيل الخروج
   Future<void> clearAuthToken() async {
-    // try {
-    //   final prefs = await SharedPreferences.getInstance();
-    //   await prefs.remove('auth_token');
-    //   _logger.green('Auth token cleared');
-    // } catch (e) {
-    //   _logger.red('Failed to clear auth token: $e');
-    // }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      _logger.green('Auth token cleared');
+    } catch (e) {
+      _logger.red('Failed to clear auth token: $e');
+    }
   }
 
   void _setupInterceptors() {
@@ -117,6 +123,15 @@ class ApiHelper {
         // if (await _shouldRefreshToken()) {
         //   await _refreshToken();
         // }
+        if (await _shouldRefreshToken()) {
+          final refreshed = await _refreshToken();
+          if (refreshed) {
+            final newToken = await _getAuthToken();
+            if (newToken != null) {
+              options.headers['Authorization'] = 'Bearer $newToken';
+            }
+          }
+        }
         return handler.next(options);
       },
       onError: (DioException e, handler) async {
@@ -124,10 +139,85 @@ class ApiHelper {
           // Обработка ошибки авторизации
           // await _handleUnauthorized();
           // return handler.resolve(await _retry(e.requestOptions));
+          final refreshed = await _refreshToken();
+          if (refreshed) {
+            return handler.resolve(await _retry(e.requestOptions));
+          } else {
+            _handleUnauthorized();
+          }
         }
         return handler.next(e);
       },
     ));
+  }
+
+  Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+    final newToken = await _getAuthToken();
+    if (newToken == null) {
+      throw DioException(
+        requestOptions: requestOptions,
+        error: "Unauthorized: No token available for retry",
+      );
+    }
+
+    final options = Options(
+      method: requestOptions.method,
+      headers: {
+        ...requestOptions.headers,
+        'Authorization': 'Bearer $newToken',
+      },
+    );
+
+    return await _dio.request<dynamic>(
+      requestOptions.path,
+      data: requestOptions.data,
+      queryParameters: requestOptions.queryParameters,
+      options: options,
+    );
+  }
+
+  // ✅ استرجاع وقت انتهاء التوكن
+  Future<int?> _getTokenExpiry() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('token_expiry');
+  }
+
+  Future<bool> _shouldRefreshToken() async {
+    final expiry = await _getTokenExpiry();
+    if (expiry == null) return false;
+
+    final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return expiry - currentTime <
+        300; // إذا بقي أقل من 5 دقائق على انتهاء التوكن
+  }
+
+  Future<bool> _refreshToken() async {
+    try {
+      final refreshToken =
+          await _getAuthToken(); // استخدم توكن التحديث إذا كان متاحًا
+      if (refreshToken == null) return false;
+
+      final response = await _dio.post(
+        "/auth/refresh", // ✅ نقطة تحديث التوكن
+        options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
+      );
+
+      if (response.statusCode == 200) {
+        final newToken = response.data["token"];
+        final newExpiry = response.data["expiry"]; // وقت الانتهاء الجديد
+        await saveAuthToken(newToken, newExpiry);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      _logger.red('Failed to refresh token: $e');
+      return false;
+    }
+  }
+
+  void _handleUnauthorized() async {
+    await clearAuthToken();
+    showErrorDialogue("انتهت جلسة تسجيل الدخول، يُرجى تسجيل الدخول مرة أخرى.");
   }
 
   void setAuthToken(String token) {
