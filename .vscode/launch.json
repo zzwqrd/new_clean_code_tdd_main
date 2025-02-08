@@ -1,0 +1,25 @@
+{
+      // Use IntelliSense to learn about possible attributes.
+      // Hover to view descriptions of existing attributes.
+      // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+      "version": "0.2.0",
+      "configurations": [
+            {
+                  "name": "clean-architecture-flutter-Tdd-main 2",
+                  "request": "launch",
+                  "type": "dart"
+            },
+            {
+                  "name": "clean-architecture-flutter-Tdd-main 2 (profile mode)",
+                  "request": "launch",
+                  "type": "dart",
+                  "flutterMode": "profile"
+            },
+            {
+                  "name": "clean-architecture-flutter-Tdd-main 2 (release mode)",
+                  "request": "launch",
+                  "type": "dart",
+                  "flutterMode": "release"
+            }
+      ]
+}
