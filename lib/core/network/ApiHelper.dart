@@ -1,11 +1,48 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
-import 'package:clean_code_tdd_main/features/feature_name/presentation/bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../main.dart';
+
+showErrorDialogue(String error) {
+  showDialog(
+    context: navigator.currentContext!,
+    builder: (context) => ErrorAlertDialogueWidget(
+      title: error,
+    ),
+  );
+}
+
+class ErrorAlertDialogueWidget extends StatelessWidget {
+  final String title;
+  const ErrorAlertDialogueWidget({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF282F37),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white),
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        InkWell(
+          child: Text("ok"),
+          onTap: () => Navigator.pop(context),
+        )
+      ],
+    );
+  }
+}
 
 class ApiHelper {
   late Dio _dio;
