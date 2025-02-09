@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kiwi/kiwi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'core/network/ApiService.dart';
 import 'core/GenericBlocBuilderNew/GenericBlocBuilderNew.dart';
@@ -17,6 +18,7 @@ class RemoteDataSource {
   Future<Either<ApiResponse, List<ProductDatum>>> getProducts() async {
     ApiResponse response = await _apiHelper.get(
       path: 'home/index',
+      requiresAuth: true,
       // fromJson: (json) => json as Map<String, dynamic>,
     );
     try {
