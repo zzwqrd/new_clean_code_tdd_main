@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$DataState {
   Status get status => throw _privateConstructorUsedError;
-  List<ProductDatum>? get data => throw _privateConstructorUsedError;
+  dynamic? get data => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -30,7 +30,7 @@ abstract class $DataStateCopyWith<$Res> {
   factory $DataStateCopyWith(DataState value, $Res Function(DataState) then) =
       _$DataStateCopyWithImpl<$Res, DataState>;
   @useResult
-  $Res call({Status status, List<ProductDatum>? data, String? error});
+  $Res call({Status status, dynamic? data, String? error});
 }
 
 /// @nodoc
@@ -58,7 +58,7 @@ class _$DataStateCopyWithImpl<$Res, $Val extends DataState>
       data: freezed == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
-              as List<ProductDatum>?,
+              as dynamic?,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,7 @@ abstract class _$$DataStateImplCopyWith<$Res>
       __$$DataStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Status status, List<ProductDatum>? data, String? error});
+  $Res call({Status status, dynamic? data, String? error});
 }
 
 /// @nodoc
@@ -99,9 +99,9 @@ class __$$DataStateImplCopyWithImpl<$Res>
           : status // ignore: cast_nullable_to_non_nullable
               as Status,
       data: freezed == data
-          ? _value._data
+          ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
-              as List<ProductDatum>?,
+              as dynamic?,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -113,23 +113,13 @@ class __$$DataStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$DataStateImpl implements _DataState {
-  const _$DataStateImpl(
-      {this.status = Status.empty, final List<ProductDatum>? data, this.error})
-      : _data = data;
+  const _$DataStateImpl({this.status = Status.empty, this.data, this.error});
 
   @override
   @JsonKey()
   final Status status;
-  final List<ProductDatum>? _data;
   @override
-  List<ProductDatum>? get data {
-    final value = _data;
-    if (value == null) return null;
-    if (_data is EqualUnmodifiableListView) return _data;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
-  }
-
+  final dynamic? data;
   @override
   final String? error;
 
@@ -144,13 +134,13 @@ class _$DataStateImpl implements _DataState {
         (other.runtimeType == runtimeType &&
             other is _$DataStateImpl &&
             (identical(other.status, status) || other.status == status) &&
-            const DeepCollectionEquality().equals(other._data, _data) &&
+            const DeepCollectionEquality().equals(other.data, data) &&
             (identical(other.error, error) || other.error == error));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, status, const DeepCollectionEquality().hash(_data), error);
+      runtimeType, status, const DeepCollectionEquality().hash(data), error);
 
   @JsonKey(ignore: true)
   @override
@@ -162,13 +152,13 @@ class _$DataStateImpl implements _DataState {
 abstract class _DataState implements DataState {
   const factory _DataState(
       {final Status status,
-      final List<ProductDatum>? data,
+      final dynamic? data,
       final String? error}) = _$DataStateImpl;
 
   @override
   Status get status;
   @override
-  List<ProductDatum>? get data;
+  dynamic? get data;
   @override
   String? get error;
   @override

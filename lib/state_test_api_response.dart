@@ -11,7 +11,7 @@ part 'state_test_api_response.freezed.dart';
 class DataState with _$DataState {
   const factory DataState({
     @Default(Status.empty) Status status,
-    List<ProductDatum>? data,
+    dynamic? data,
     String? error,
   }) = _DataState;
 }
