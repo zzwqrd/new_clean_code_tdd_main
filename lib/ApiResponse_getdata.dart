@@ -81,11 +81,13 @@ class DataBloc extends Cubit<DataState> {
     );
   }
 
+  final ApiHelper _apiHelper = ApiHelper();
   Future<void> loginI() async {
     emit(state.copyWith(status: Status.loading));
     ApiResponse response = await getLogin();
     if (response.success) {
       UserDetailsRm model = UserDetailsRm.fromJson(response.data!);
+      _apiHelper.saveAuthToken(model.data!.token, 100);
       showErrorDialogue(response.msg);
       emit(state.copyWith(status: Status.success, data: model, error: null));
     } else {
