@@ -15,6 +15,7 @@ class Assets {
   static const String iconsDirectoryStructure =
       'assets/icons/directory_structure.png';
   static const String iconsEmptyState = 'assets/icons/empty_state.png';
+  static const String iconsArabicFlag = 'assets/icons/arabic.png';
   static const String iconsLoading = 'assets/icons/loading.json';
   static const String langsAr = 'assets/langs/ar.json';
   static const String langsEn = 'assets/langs/en.json';

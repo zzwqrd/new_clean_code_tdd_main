@@ -1,12 +1,10 @@
+import 'package:clean_code_tdd_main/core/general_bloc/generic_cubit.dart';
 import 'package:clean_code_tdd_main/core/network/ApiHelper.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kiwi/kiwi.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-// import 'core/network/ApiService.dart';
-import 'core/GenericBlocBuilderNew/GenericBlocBuilderNew.dart';
 import 'core/statusApp/statusApp.dart';
 import 'features/feature_name/data/models/model_name.dart';
 import 'state_test_api_response.dart';
@@ -149,8 +147,28 @@ class DataBloc extends Cubit<DataState> {
   }
 }
 
+class GetDataGnrl {
+  final GenericBloc<List<ProductDatum>> products = GenericBloc([]);
+  final RemoteDataSource _dataSource = RemoteDataSource();
+
+  Future<void> getData() async {
+    final result = await _dataSource.getProducts();
+
+    result.fold(
+      (error) {
+        showErrorDialogue(error.msg);
+        products.onFailedResponse(error: error.msg);
+      },
+      (data) {
+        products.onUpdateData(data);
+      },
+    );
+  }
+}
+
 class DataScreen extends StatelessWidget {
-  const DataScreen({super.key});
+  final GetDataGnrl getDataGnrl = GetDataGnrl();
+  DataScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -166,30 +184,49 @@ class DataScreen extends StatelessWidget {
           );
         },
       ),
-      body: BlocBuilder<DataBloc, DataState>(
-        bloc: KiwiContainer().resolve<DataBloc>()..getData(),
-        builder: (context, state) {
-          return GenericBlocBuilderNew<DataBloc, DataState>(
-            bloc: KiwiContainer().resolve<DataBloc>(),
-            status: state.status, // تمرير الحالة هنا
-            context: context, // تمرير context هنا
-            state: state, // تمرير state هنا
-            // emptyWidget: const EmptyWidget(message: "No products available!"),
-            onRetryPressed: () {
-              KiwiContainer().resolve<DataBloc>().grtDataI();
-            },
-            successWidget: (context, state) {
-              return ListView.builder(
-                shrinkWrap: true,
-                itemCount: state.data!.length,
-                itemBuilder: (_, index) {
-                  ProductDatum item = state.data![index];
-                  return _listItem(item);
-                },
-              );
-            },
-          );
-        },
+      // body: BlocBuilder<DataBloc, DataState>(
+      //   bloc: KiwiContainer().resolve<DataBloc>()..getData(),
+      body: BlocProvider<GenericBloc<List<ProductDatum>>>(
+        create: (_) => getDataGnrl.products,
+        child: BlocBuilder<GenericBloc<List<ProductDatum>>,
+            GenericState<List<ProductDatum>>>(
+          // bloc: KiwiContainer().resolve<GetDataGnrl>().products,
+          bloc: () {
+            final getDataGnrl = KiwiContainer().resolve<GetDataGnrl>();
+            getDataGnrl.getData(); // استدعاء getData() هنا
+            return getDataGnrl.products;
+          }(),
+          builder: (context, state) {
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: state.data.length,
+              itemBuilder: (_, index) {
+                ProductDatum item = state.data[index];
+                return _listItem(item);
+              },
+            );
+            // return GenericBlocBuilderNew<DataBloc, DataState>(
+            //   bloc: KiwiContainer().resolve<DataBloc>(),
+            //   status: state.status, // تمرير الحالة هنا
+            //   context: context, // تمرير context هنا
+            //   state: state, // تمرير state هنا
+            //   // emptyWidget: const EmptyWidget(message: "No products available!"),
+            //   onRetryPressed: () {
+            //     KiwiContainer().resolve<DataBloc>().grtDataI();
+            //   },
+            //   successWidget: (context, state) {
+            //     return ListView.builder(
+            //       shrinkWrap: true,
+            //       itemCount: state.data!.length,
+            //       itemBuilder: (_, index) {
+            //         ProductDatum item = state.data![index];
+            //         return _listItem(item);
+            //       },
+            //     );
+            //   },
+            // );
+          },
+        ),
       ),
     );
   }

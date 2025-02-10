@@ -31,4 +31,5 @@ void initKiwi() {
   container.registerFactory((c) => DataCubit());
 
   container.registerFactory((c) => DataBloc());
+  container.registerFactory((c) => GetDataGnrl());
 }

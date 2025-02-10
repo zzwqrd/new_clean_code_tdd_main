@@ -140,10 +140,18 @@ class ApiHelper {
         _logger.green('Data: ${response.data}');
         return handler.next(response);
       },
-      onError: (DioException e, handler) {
+      onError: (DioException e, handler) async {
         _logger.red('Error: ${e.message}');
         _logger.red('Response: ${e.response?.data}');
-
+        if (e.response?.statusCode == 401) {
+          // محاولة تجديد التوكن
+          final refreshed = await _refreshToken();
+          if (refreshed) {
+            return handler.resolve(await _retry(e.requestOptions));
+          } else {
+            _handleUnauthorized();
+          }
+        }
         // Handle SSL Error specifically
         if (e.type == DioExceptionType.badCertificate) {
           _logger.red(
@@ -606,9 +614,14 @@ class ApiResponse<T> {
       case DioExceptionType.sendTimeout:
         errorMessage = "Request timed out while sending data";
         break;
+      case DioExceptionType.unknown:
+        errorMessage = "خطأ غير معروف";
+        break;
       default:
         if (error.response?.statusCode == 404) {
-          errorMessage = "Resource not found";
+          errorMessage = "لم يتم العثور على المورد";
+        } else if (error.response?.statusCode == 401) {
+          errorMessage = "انتهت جلسة تسجيل الدخول";
         }
     }
 

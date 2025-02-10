@@ -49,6 +49,7 @@ class MyApp extends StatelessWidget {
           // routes: AppRoutes.init.appRoutes,
           navigatorKey: navigator,
           debugShowCheckedModeBanner: false,
+
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
